@@ -26,14 +26,16 @@ export const useInboxStore = defineStore('inbox', () => {
       messages.value = res.data
     } catch (e) { console.error(e) }
   }
+  
 
   // 🧠 The "Magic" AI Button Action
-  const analyzeTicket = async (msg: Message) => {
+  const analyzeTicket = async (msg: Message, tone: string) => {
     loadingAI.value = true
     try {
       const res = await axios.post('http://localhost:3000/analyze-ticket', {
         id: msg.id,
-        text: msg.text
+        text: msg.text,
+        tone:tone
       })
       
       // Update local state immediately with AI results

@@ -17,15 +17,15 @@ let messages = [
 
 // 🧠 AI Analysis Endpoint
 app.post('/analyze-ticket', async (c) => {
-  const { text, id } = await c.req.json();
-
-  const prompt = `
-    Analyze this customer message: "${text}".
-    1. Detect Sentiment (Positive, Neutral, Negative).
-    2. Draft a polite, professional reply (under 50 words).
-    3. Suggest a priority level (Low, Medium, High).
-    Return ONLY JSON: { "sentiment": "...", "reply": "...", "priority": "..." }
-  `;
+      const { text, id, tone = 'Professional' } = await c.req.json(); // Default to Professional
+      
+      const prompt = `
+        Analyze this customer message: "${text}".
+        1. Detect Sentiment (Positive, Neutral, Negative).
+        2. Draft a reply in a ${tone} tone (under 50 words).
+        3. Suggest a priority level.
+        Return ONLY JSON: { "sentiment": "...", "reply": "...", "priority": "..." }
+      `;
 
   try {
     const completion = await groq.chat.completions.create({

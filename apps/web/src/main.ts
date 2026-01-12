@@ -2,7 +2,7 @@ import { createApp } from 'vue'
 import { createPinia } from 'pinia'
 import App from './App.vue'
 import './style.css' // Tailwind
-
+import router from './router'
 import 'vuetify'
 import { createVuetify } from 'vuetify'
 import * as components from 'vuetify/components'
@@ -17,4 +17,5 @@ const app = createApp(App)
 
 app.use(createPinia())
 app.use(vuetify)
+app.use(router)
 app.mount('#app')
