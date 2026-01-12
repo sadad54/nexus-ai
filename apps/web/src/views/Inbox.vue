@@ -88,169 +88,163 @@ const getPriorityColor = (p?: string) => {
       </div>
     </aside>
 
-    <section class="w-80 lg:w-96 bg-nexus-900/50 backdrop-blur-md flex flex-col border-r border-white/5 z-10">
-      <div class="p-4 border-b border-white/5">
-        <h2 class="text-white font-semibold text-lg mb-4 flex items-center gap-2">
-          Inbox <span class="text-xs bg-blue-500/20 text-blue-400 px-2 py-0.5 rounded-full">{{ store.messages.length }}</span>
-        </h2>
-        <div class="relative">
-          <Search class="absolute left-3 top-2.5 w-4 h-4 text-slate-500" />
-          <input 
-            v-model="searchQuery"
-            type="text" 
-            placeholder="Search tickets..." 
-            class="w-full bg-nexus-950/50 border border-white/10 rounded-lg pl-9 pr-3 py-2 text-sm focus:outline-none focus:border-blue-500/50 transition-colors"
+<section class="w-80 lg:w-96 bg-nexus-900/60 backdrop-blur-xl border-r border-white/5 z-10 flex flex-col">
+  
+  <div class="p-5 border-b border-white/5">
+    <h2 class="text-white font-bold text-lg mb-4 flex items-center gap-3 tracking-tight">
+      Inbox 
+      <span class="text-[10px] bg-nexus-500/10 text-nexus-400 px-2 py-0.5 rounded-full border border-nexus-500/20 shadow-sm">Live</span>
+    </h2>
+    
+    <div class="relative group">
+      <Search class="absolute left-3 top-2.5 w-4 h-4 text-slate-500 group-focus-within:text-nexus-400 transition-colors" />
+      <input 
+        v-model="searchQuery"
+        type="text" 
+        placeholder="Filter tickets..." 
+        class="w-full bg-nexus-950/50 border border-white/10 rounded-xl pl-10 pr-4 py-2 text-sm text-slate-200 
+               focus:outline-none focus:border-nexus-500/50 focus:ring-1 focus:ring-nexus-500/50 focus:shadow-glow
+               placeholder:text-slate-600 transition-all duration-300"
+      >
+    </div>
+  </div>
+
+  <div class="flex-1 overflow-y-auto custom-scrollbar p-2 space-y-1">
+    <div 
+      v-for="msg in filteredMessages" 
+      :key="msg.id"
+      @click="setActive(msg.id)"
+      class="p-4 rounded-xl cursor-pointer transition-all duration-200 border relative overflow-hidden group"
+      :class="store.activeMsgId === msg.id 
+        ? 'bg-white/[0.04] border-white/10 shadow-[inset_0_0_20px_rgba(99,102,241,0.05)]' 
+        : 'bg-transparent border-transparent hover:bg-white/[0.02] hover:border-white/5'"
+    >
+      <div v-if="store.activeMsgId === msg.id" class="absolute left-0 top-3 bottom-3 w-1 bg-nexus-500 rounded-r-full shadow-glow"></div>
+
+      <div class="flex justify-between items-start mb-1 pl-2">
+        <h4 class="font-semibold text-sm transition-colors" :class="store.activeMsgId === msg.id ? 'text-white' : 'text-slate-300'">
+          {{ msg.customer }}
+        </h4>
+        <span class="text-[10px] text-slate-600 font-mono">10:42 AM</span>
+      </div>
+      <p class="text-xs text-slate-400 line-clamp-2 pl-2 mb-3 leading-relaxed group-hover:text-slate-300 transition-colors">
+        {{ msg.text }}
+      </p>
+      
+      <div class="pl-2 flex gap-2">
+        <span class="px-2 py-0.5 rounded text-[10px] border font-medium" :class="getPriorityColor(msg.priority)">{{ msg.priority || 'Low' }}</span>
+        <span class="text-[10px] text-slate-500 border border-white/5 px-2 py-0.5 rounded bg-nexus-950/30">
+           {{ msg.platform }}
+        </span>
+      </div>
+    </div>
+  </div>
+</section>
+
+    <main class="flex-1 flex flex-col relative bg-nexus-950 bg-subtle-grid">
+  
+  <div class="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
+     <div class="absolute top-[-10%] right-[-10%] w-[500px] h-[500px] bg-nexus-500/10 rounded-full blur-[100px]"></div>
+     <div class="absolute bottom-[-10%] left-[10%] w-[400px] h-[400px] bg-nexus-accent/5 rounded-full blur-[100px]"></div>
+  </div>
+
+  <header class="h-16 px-6 border-b border-white/5 flex items-center justify-between bg-nexus-900/40 backdrop-blur-md z-20">
+      </header>
+
+  <div class="flex-1 overflow-y-auto p-8 space-y-8 z-10 scroll-smooth custom-scrollbar">
+    
+    <div v-if="activeMessage" class="flex gap-4 animate-in fade-in slide-in-from-bottom-2 duration-500">
+      <img :src="`https://api.dicebear.com/7.x/initials/svg?seed=${activeMessage.customer}`" class="w-10 h-10 rounded-full border border-white/10 shadow-lg" />
+      
+      <div class="max-w-2xl">
+         <div class="flex items-baseline gap-2 mb-1">
+           <span class="text-sm font-semibold text-slate-200">{{ activeMessage.customer }}</span>
+         </div>
+         <div class="bg-nexus-800 border border-white/5 p-5 rounded-2xl rounded-tl-none text-slate-200 leading-relaxed shadow-lg relative group">
+           {{ activeMessage.text }}
+           <div class="absolute -right-2 -top-3 opacity-0 group-hover:opacity-100 transition-opacity bg-nexus-900 border border-white/10 px-2 py-1 rounded-full text-[10px] shadow-xl flex items-center gap-1 cursor-help">
+              <div class="w-2 h-2 rounded-full" :class="activeMessage.sentiment === 'Negative' ? 'bg-red-500 shadow-[0_0_10px_red]' : 'bg-green-500'"></div>
+              {{ activeMessage.sentiment || 'Analyzing...' }}
+           </div>
+         </div>
+      </div>
+    </div>
+
+    <div v-if="activeMessage && activeMessage.reply" class="flex flex-row-reverse gap-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
+       <div class="w-10 h-10 rounded-full bg-gradient-to-br from-nexus-500 to-nexus-600 flex items-center justify-center shrink-0 shadow-glow text-white">
+         <Sparkles class="w-5 h-5 animate-pulse-slow" />
+       </div>
+       <div class="max-w-2xl w-full">
+          <div class="flex items-baseline gap-2 mb-1 justify-end">
+            <span class="text-xs text-nexus-400 font-medium tracking-wide uppercase">AI Draft • {{ selectedTone }}</span>
+          </div>
+          
+          <div class="relative group">
+            <div class="absolute -inset-0.5 bg-gradient-to-r from-nexus-500 to-nexus-accent opacity-30 rounded-2xl blur group-hover:opacity-60 transition duration-500"></div>
+            <div class="relative bg-nexus-900 border border-white/10 p-1 rounded-2xl">
+              <textarea 
+                v-model="activeMessage.reply"
+                class="w-full bg-nexus-950/50 text-slate-200 px-5 py-4 rounded-xl min-h-[120px] focus:outline-none resize-none leading-relaxed selection:bg-nexus-500/30 font-light border-0"
+              ></textarea>
+              <div class="flex justify-between items-center px-4 py-2 border-t border-white/5">
+                 <div class="text-[10px] text-slate-500 flex gap-3">
+                    <button class="hover:text-nexus-400 transition-colors flex items-center gap-1"><span class="text-lg">⟳</span> Regenerate</button>
+                 </div>
+                 <div class="flex gap-2">
+                    <button @click="activeMessage.reply = undefined" class="px-3 py-1.5 text-xs text-slate-400 hover:text-white transition-colors">Discard</button>
+                    <button @click="handleSend" class="bg-nexus-500 hover:bg-nexus-400 text-white text-xs font-semibold px-4 py-2 rounded-lg shadow-glow transition-all flex items-center gap-2 transform active:scale-95">
+                      Approve <Send class="w-3 h-3" />
+                    </button>
+                 </div>
+              </div>
+            </div>
+          </div>
+       </div>
+    </div>
+  </div>
+
+  <div class="p-6 pt-0 z-20">
+    <div class="bg-nexus-900/80 backdrop-blur-2xl border border-white/10 rounded-2xl p-3 shadow-2xl relative">
+       
+       <div class="absolute bottom-full left-4 mb-3 flex gap-2">
+          <button 
+             v-for="tone in tones" :key="tone" 
+             @click="selectedTone = tone"
+             class="px-3 py-1 rounded-full text-xs border transition-all duration-300"
+             :class="selectedTone === tone ? 'bg-nexus-500/20 border-nexus-500 text-nexus-300 shadow-glow' : 'bg-black/40 border-white/10 text-slate-400 hover:border-white/20 hover:text-slate-200'"
           >
-        </div>
-      </div>
-      
-      <div class="flex-1 overflow-y-auto custom-scrollbar p-2 space-y-1">
-        <div 
-          v-for="msg in filteredMessages" 
-          :key="msg.id"
-          @click="setActive(msg.id)"
-          class="p-4 rounded-xl cursor-pointer transition-all border border-transparent hover:border-white/5 group relative"
-          :class="store.activeMsgId === msg.id ? 'bg-white/5 border-white/10 shadow-lg' : 'hover:bg-white/[0.02]'"
-        >
-          <div class="flex justify-between items-start mb-1">
-            <h4 class="font-medium text-white truncate pr-2" :class="store.activeMsgId === msg.id ? 'text-blue-400' : ''">
-              {{ msg.customer }}
-            </h4>
-            <span class="text-[10px] text-slate-500 whitespace-nowrap">2m ago</span>
-          </div>
-          <p class="text-xs text-slate-400 line-clamp-2 mb-3 leading-relaxed">
-            {{ msg.text }}
-          </p>
-          <div class="flex items-center gap-2">
-            <span 
-              class="text-[10px] px-2 py-0.5 rounded border"
-              :class="getPriorityColor(msg.priority || 'Low')"
-            >
-              {{ msg.priority || 'Low' }}
+            {{ tone }}
+          </button>
+       </div>
+
+       <div class="flex gap-3 items-end">
+         <button class="p-3 text-slate-400 hover:text-nexus-400 hover:bg-white/5 rounded-xl transition-colors">
+            <InboxIcon class="w-5 h-5 rotate-45" /> 
+         </button>
+         <textarea 
+            placeholder="Type a message or press '/' for AI commands..." 
+            class="flex-1 bg-transparent text-slate-200 p-3 max-h-32 focus:outline-none placeholder:text-slate-600 resize-none font-light"
+            rows="1"
+         ></textarea>
+         
+         <button 
+            @click="handleAnalyze" 
+            :disabled="store.loadingAI"
+            class="p-3 rounded-xl transition-all duration-300 group overflow-hidden relative"
+            :class="store.loadingAI ? 'bg-nexus-900 cursor-wait' : 'bg-gradient-to-r from-nexus-500 to-indigo-600 hover:brightness-110 text-white shadow-glow'"
+         >
+            <span v-if="!store.loadingAI" class="flex items-center gap-2">
+               <Sparkles class="w-5 h-5" />
+               <span class="text-xs font-bold pr-1 hidden group-hover:inline-block animate-in fade-in slide-in-from-right-1">AI Draft</span>
             </span>
-            <span v-if="msg.platform" class="text-[10px] text-slate-500 border border-white/5 px-2 py-0.5 rounded">
-              {{ msg.platform }}
+            <span v-else class="flex items-center justify-center">
+               <div class="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
             </span>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <main class="flex-1 flex flex-col relative bg-gradient-to-tr from-nexus-950 via-nexus-900 to-nexus-950">
-      
-      <div v-if="!activeMessage" class="flex-1 flex flex-col items-center justify-center text-slate-500 gap-4">
-        <div class="w-16 h-16 rounded-2xl bg-white/5 flex items-center justify-center">
-          <InboxIcon class="w-8 h-8 opacity-50" />
-        </div>
-        <p>Select a ticket to start working</p>
-      </div>
-
-      <template v-else>
-        <header class="h-16 px-6 border-b border-white/5 flex items-center justify-between bg-nexus-900/50 backdrop-blur-sm">
-          <div class="flex items-center gap-3">
-            <div class="w-8 h-8 rounded-full bg-indigo-500 flex items-center justify-center text-xs font-bold text-white">
-              {{ activeMessage.customer.charAt(0) }}
-            </div>
-            <div>
-              <h1 class="text-white font-medium text-sm">{{ activeMessage.customer }}</h1>
-              <p class="text-xs text-slate-500 flex items-center gap-1">
-                via {{ activeMessage.platform }} • <span class="flex items-center gap-1 text-green-400"><Clock class="w-3 h-3"/> Open</span>
-              </p>
-            </div>
-          </div>
-          <div class="flex items-center gap-3">
-             <button class="p-2 hover:bg-white/10 rounded-lg text-slate-400 transition-colors"><MoreHorizontal class="w-4 h-4"/></button>
-             <button class="bg-white/5 hover:bg-white/10 border border-white/10 text-xs px-3 py-1.5 rounded-lg text-white transition-all">Resolve</button>
-          </div>
-        </header>
-
-        <div class="flex-1 overflow-y-auto p-6 lg:p-10 scroll-smooth">
-          <div class="flex gap-4 mb-8 group">
-            <div class="w-10 h-10 rounded-full bg-slate-800 border border-white/5 flex items-center justify-center shrink-0">
-              <span class="text-lg">👤</span>
-            </div>
-            <div class="max-w-3xl">
-               <div class="bg-slate-800/50 border border-white/5 p-6 rounded-2xl rounded-tl-none text-slate-200 leading-7 shadow-sm">
-                 {{ activeMessage.text }}
-               </div>
-               <div class="mt-2 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity pl-2">
-                  <span class="text-[10px] text-slate-500 uppercase tracking-widest font-semibold">Detected Tone:</span>
-                  <span class="text-[10px] text-blue-400">{{ activeMessage.sentiment || 'Analyzing...' }}</span>
-               </div>
-            </div>
-          </div>
-
-          <div v-if="activeMessage.reply" class="flex gap-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
-             <div class="w-10 h-10 rounded-full bg-blue-600/20 border border-blue-500/30 flex items-center justify-center shrink-0">
-               <Sparkles class="w-5 h-5 text-blue-400" />
-             </div>
-             <div class="w-full max-w-3xl space-y-3">
-                <div class="relative group">
-                  <div class="absolute -inset-0.5 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-2xl opacity-20 group-hover:opacity-40 transition duration-500 blur"></div>
-                  <div class="relative bg-nexus-900 border border-white/10 p-1 rounded-2xl">
-                    <div class="flex items-center justify-between px-4 py-2 border-b border-white/5 mb-2">
-                       <span class="text-xs font-medium text-blue-400 flex items-center gap-1.5">
-                         <Sparkles class="w-3 h-3" /> AI Suggestion
-                       </span>
-                       <span class="text-[10px] text-slate-500 uppercase tracking-wider">{{ selectedTone }} Tone</span>
-                    </div>
-                    <textarea 
-                      v-model="activeMessage.reply"
-                      class="w-full bg-transparent text-slate-200 px-4 py-2 min-h-[120px] focus:outline-none resize-none leading-relaxed"
-                    ></textarea>
-                    
-                    <div class="flex justify-end p-2 gap-2">
-                       <button @click="activeMessage.reply = undefined" class="text-xs text-slate-400 hover:text-white px-3 py-1.5 transition-colors">Discard</button>
-                       <button 
-                         @click="handleSend"
-                         class="bg-blue-600 hover:bg-blue-500 text-white text-xs font-medium px-4 py-1.5 rounded-lg flex items-center gap-2 transition-all shadow-glow"
-                       >
-                         Send Reply <span class="opacity-50 text-[10px] ml-1">⌘↵</span>
-                       </button>
-                    </div>
-                  </div>
-                </div>
-             </div>
-          </div>
-        </div>
-
-        <div class="p-6 border-t border-white/5 bg-nexus-900/30 backdrop-blur-xl z-20">
-          <div class="max-w-4xl mx-auto relative">
-             
-             <div v-if="!activeMessage.reply" class="absolute bottom-full left-0 mb-4 flex items-center gap-2 animate-in fade-in slide-in-from-bottom-2">
-               <div class="flex items-center bg-nexus-800/80 backdrop-blur border border-white/10 rounded-lg p-1">
-                 <button 
-                   v-for="tone in tones" :key="tone"
-                   @click="selectedTone = tone"
-                   class="px-3 py-1.5 text-xs rounded-md transition-all"
-                   :class="selectedTone === tone ? 'bg-blue-600 text-white shadow-sm' : 'text-slate-400 hover:text-slate-200'"
-                 >
-                   {{ tone }}
-                 </button>
-               </div>
-               <button 
-                 @click="handleAnalyze"
-                 :disabled="store.loadingAI"
-                 class="bg-white text-nexus-950 px-4 py-2 rounded-lg text-xs font-bold flex items-center gap-2 hover:shadow-[0_0_15px_rgba(255,255,255,0.3)] transition-all disabled:opacity-50"
-               >
-                 <Sparkles class="w-3 h-3 text-indigo-600" />
-                 {{ store.loadingAI ? 'Drafting...' : 'Generate Draft' }}
-               </button>
-             </div>
-
-             <div class="relative">
-               <textarea 
-                 class="w-full bg-nexus-950 border border-white/10 rounded-xl p-4 pl-4 pr-12 text-sm text-slate-200 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/20 transition-all shadow-inner h-14 resize-none pt-4"
-                 placeholder="Type a manual reply..."
-               ></textarea>
-               <button class="absolute right-2 top-2 p-2 bg-white/5 hover:bg-white/10 rounded-lg text-slate-400 hover:text-white transition-colors">
-                 <Send class="w-4 h-4" />
-               </button>
-             </div>
-          </div>
-        </div>
-      </template>
-    </main>
+         </button>
+       </div>
+    </div>
+  </div>
+</main>
   </div>
 </template>
 
