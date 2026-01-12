@@ -19,11 +19,18 @@ export const useInboxStore = defineStore('inbox', () => {
   const loadingAI = ref(false)
 
   // Fetch from our Hono Backend
-  const fetchMessages = async () => {
+const fetchMessages = async () => {
     try {
-      // Assuming Backend is on port 3000
       const res = await axios.get('http://localhost:3000/messages')
       messages.value = res.data
+      
+      // 👇 Fixed: We assign to a variable first to satisfy TypeScript
+      if (messages.value.length > 0 && !activeMsgId.value) {
+        const firstMessage = messages.value[0]
+        if (firstMessage) {
+           activeMsgId.value = firstMessage.id
+        }
+      }
     } catch (e) { console.error(e) }
   }
   
